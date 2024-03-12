@@ -1,7 +1,6 @@
 from openpyxl import load_workbook
-
-from stockbrowser import StockBrowser
-from excelhandler import ExcelHandler
+from browser import StockBrowser
+from handler import ExcelHandler
 
 
 def main():
@@ -45,7 +44,6 @@ def main():
     handler.create_history_worksheets()
     handler.fill_history()
     handler.style_history()
-    handler.convert_to_value()
     handler.save_changes(filename)
 
 
