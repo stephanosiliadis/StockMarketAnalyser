@@ -1,5 +1,6 @@
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, PatternFill, Alignment
+import pandas as pd
 
 
 class ExcelHandler(object):
@@ -16,6 +17,8 @@ class ExcelHandler(object):
             self.stock_history = browser.get_stock_history()
         else:
             self.stock_history = browser.get_stock_latest_history()
+        print(pd.DataFrame.from_dict(self.stock_history))
+
         # Initialize the excel workbook and fill in the data
         self.ws.append(["Symbols"] + list(headers.keys()))
         for col in range(len(stocks)):
@@ -24,6 +27,14 @@ class ExcelHandler(object):
         # Modify the width of all columns
         for col in range(1, len(headers) + 2):
             self.ws.column_dimensions[get_column_letter(col)].width = 17
+
+        self.style_cells()
+        self.align_cells()
+        self.modify_cell_font()
+        self.fix_notation()
+        self.create_history_worksheets()
+        self.fill_history()
+        self.style_history()
 
     def style_cells(self):
         # Make cell bg black and font white and align center
@@ -104,10 +115,14 @@ class ExcelHandler(object):
 
     # TODO: Reverse the history table order so that the latest history is shown last
     def fill_history(self):
-        ws_names = self.wb.get_sheet_names()[:-1]
+        ws_names = self.wb.get_sheet_names()[1:]
         for name in ws_names:
-            ws = self.wb[name]
-            data = self.stock_history[name.replace(" History", "")]
+            if name != "StocksData":
+                ws = self.wb[name]
+            else:
+                continue
+            stock = name.replace(" History", "")
+            data = self.stock_history[stock]
             history_headers = [
                 "Close",
                 "% Performance",
@@ -125,7 +140,7 @@ class ExcelHandler(object):
                 ws.column_dimensions[char].width = 17
                 ws[cell] = header
 
-            # FIll in the history
+            # Fill in the history
             for row, date in enumerate(data.keys()):
                 if self.answer != "y" and date != ws["A2"].value:
                     ws.insert_rows(1)
@@ -146,14 +161,18 @@ class ExcelHandler(object):
                         ws[cell] = stock_data[list(stock_data.keys())[col - 2]]
 
     def style_history(self):
-        ws_names = self.wb.get_sheet_names()[:-1]
+        ws_names = self.wb.get_sheet_names()[1:]
         for name in ws_names:
-            ws = self.wb[name]
+            if name != "StocksData":
+                ws = self.wb[name]
+            else:
+                continue
             # Make the column width to be 10 and hide the Grid Lines
             ws.column_dimensions["A"].width = 15
             ws.sheet_view.showGridLines = False
             # Apply colors, basic fonts and basic alignment
-            data = self.stock_history[name.replace(" History", "")]
+            stock = name.replace(" History", "")
+            data = self.stock_history[stock]
             history_headers = [
                 "Close",
                 "% Performance",
@@ -218,5 +237,3 @@ class ExcelHandler(object):
     def save_changes(self, path):
         self.wb.save(path)
         print("Workbook is ready!")
-
-

@@ -34,16 +34,9 @@ def main():
     wb.create_sheet("StocksData")
     ws = wb["StocksData"]
     ws.sheet_view.showGridLines = False
-    
+
     browser = StockBrowser(stocks, headers)
     handler = ExcelHandler(wb, ws, headers, stocks, browser)
-    handler.style_cells()
-    handler.align_cells()
-    handler.modify_cell_font()
-    handler.fix_notation()
-    handler.create_history_worksheets()
-    handler.fill_history()
-    handler.style_history()
     handler.save_changes(filename)
 
 
