@@ -1,6 +1,6 @@
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, PatternFill, Alignment
-import pandas as pd
+from collections import OrderedDict
 
 
 class ExcelHandler(object):
@@ -13,11 +13,15 @@ class ExcelHandler(object):
         self.answer = input(
             "Would you like to get the full history of your stocks? (y/n): "
         )
+        self.stock_history = {}
         if self.answer == "y":
             self.stock_history = browser.get_stock_history()
         else:
             self.stock_history = browser.get_stock_latest_history()
-        print(pd.DataFrame.from_dict(self.stock_history))
+
+        # Reverse stock history from oldest to earliest
+        for stock, history in self.stock_history.items():
+            self.stock_history[stock] = OrderedDict(reversed(list(history.items())))
 
         # Initialize the excel workbook and fill in the data
         self.ws.append(["Symbols"] + list(headers.keys()))
@@ -113,7 +117,6 @@ class ExcelHandler(object):
             else:
                 pass
 
-    # TODO: Reverse the history table order so that the latest history is shown last
     def fill_history(self):
         ws_names = self.wb.get_sheet_names()[1:]
         for name in ws_names:

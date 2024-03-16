@@ -1,7 +1,8 @@
+import os
+from openpyxl import Workbook
 from openpyxl import load_workbook
 from browser import StockBrowser
 from handler import ExcelHandler
-
 
 def main():
     stocks = [
@@ -28,9 +29,14 @@ def main():
         "Actions": None,
     }
     filename = "StockData.xlsx"
+    try:
+        wb = load_workbook(filename)
+        if "StocksData" in wb.sheetnames:
+            wb.remove(wb["StocksData"])
+    except Exception:
+        wb = Workbook()
+        wb.remove(wb["Sheet"])
 
-    wb = load_workbook(filename)
-    wb.remove(wb["StocksData"])
     wb.create_sheet("StocksData")
     ws = wb["StocksData"]
     ws.sheet_view.showGridLines = False
@@ -38,7 +44,6 @@ def main():
     browser = StockBrowser(stocks, headers)
     handler = ExcelHandler(wb, ws, headers, stocks, browser)
     handler.save_changes(filename)
-
 
 if __name__ == "__main__":
     main()
