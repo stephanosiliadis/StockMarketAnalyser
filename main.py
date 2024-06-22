@@ -2,6 +2,7 @@ from openpyxl import Workbook, load_workbook
 from browser import StockBrowser
 from handler import ExcelHandler
 
+
 def main():
     stocks = [
         "ΚΑΡΕΛ",
@@ -43,6 +44,7 @@ def main():
     browser = StockBrowser(stocks, headers)
     handler = ExcelHandler(wb, ws, headers, stocks, browser)
     handler.save_changes(filename)
+
 
 if __name__ == "__main__":
     main()
