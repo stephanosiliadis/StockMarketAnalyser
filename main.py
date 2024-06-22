@@ -1,6 +1,4 @@
-import os
-from openpyxl import Workbook
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
 from browser import StockBrowser
 from handler import ExcelHandler
 
@@ -29,6 +27,7 @@ def main():
         "Actions": None,
     }
     filename = "StockData.xlsx"
+
     try:
         wb = load_workbook(filename)
         if "StocksData" in wb.sheetnames:

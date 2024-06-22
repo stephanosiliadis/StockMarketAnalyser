@@ -14,6 +14,15 @@ class ExcelHandler(object):
             "Would you like to get the full history of your stocks? (y/n): "
         )
         self.stock_history = {}
+        self.history_headers = [
+            "Close",
+            "% Performance",
+            "Market Open",
+            "High",
+            "Low",
+            "Volume",
+            "Value",
+        ]
         if self.answer == "y":
             self.stock_history = browser.get_stock_history()
         else:
@@ -41,6 +50,7 @@ class ExcelHandler(object):
         self.style_history()
 
     def style_cells(self):
+        print("Styling cells...")
         # Make cell bg black and font white and align center
         for row in range(1, len(self.stocks) + 2):
             for col in range(1, len(self.headers) + 2):
@@ -55,6 +65,7 @@ class ExcelHandler(object):
                 )
 
     def align_cells(self):
+        print("Aligning text in cells...")
         # Performance symbol alignment:
         for row in range(2, len(self.stocks) + 2):
             cell = f"A{row}"
@@ -70,6 +81,7 @@ class ExcelHandler(object):
                 )
 
     def modify_cell_font(self):
+        print("Modifying cell font...")
         # Make headings bold:
         for col in range(1, len(self.headers) + 2):
             char = get_column_letter(col)
@@ -83,8 +95,7 @@ class ExcelHandler(object):
                 cell = f"{char}{row}"
                 val = self.ws[cell].value
                 try:
-                    val = val.replace(",", ".")
-                    val = val.replace("%", "")
+                    val = val.replace(",", ".").replace("%", "")
                 except Exception:
                     pass
                 if float(val) > 0:
@@ -96,6 +107,7 @@ class ExcelHandler(object):
                 self.ws[cell].font = Font(color=color, size=14)
 
     def fix_notation(self):
+        print("Fixing float notation...")
         # Convert back to Greek notation for float values
         for row in range(2, len(self.stocks) + 2):
             for col in range(2, 5):
@@ -110,6 +122,7 @@ class ExcelHandler(object):
                 self.ws[cell] = val
 
     def create_history_worksheets(self):
+        print("Creating history worksheets...")
         for stock in self.stocks:
             sheet_name = f"{stock} History"
             if sheet_name not in self.wb.get_sheet_names():
@@ -118,6 +131,7 @@ class ExcelHandler(object):
                 pass
 
     def fill_history(self):
+        print("Filling history worksheets...")
         ws_names = self.wb.get_sheet_names()[1:]
         for name in ws_names:
             if name != "StocksData":
@@ -126,18 +140,10 @@ class ExcelHandler(object):
                 continue
             stock = name.replace(" History", "")
             data = self.stock_history[stock]
-            history_headers = [
-                "Close",
-                "% Performance",
-                "Market Open",
-                "High",
-                "Low",
-                "Volume",
-                "Value",
-            ]
+
             # Put the history headers in the 1st row
             ws["A1"] = "Date"
-            for col, header in enumerate(history_headers):
+            for col, header in enumerate(self.history_headers):
                 char = get_column_letter(col + 2)
                 cell = f"{char}1"
                 ws.column_dimensions[char].width = 17
@@ -164,6 +170,7 @@ class ExcelHandler(object):
                         ws[cell] = stock_data[list(stock_data.keys())[col - 2]]
 
     def style_history(self):
+        print("Styling history worksheets...")
         ws_names = self.wb.get_sheet_names()[1:]
         for name in ws_names:
             if name != "StocksData":
@@ -176,17 +183,9 @@ class ExcelHandler(object):
             # Apply colors, basic fonts and basic alignment
             stock = name.replace(" History", "")
             data = self.stock_history[stock]
-            history_headers = [
-                "Close",
-                "% Performance",
-                "Market Open",
-                "High",
-                "Low",
-                "Volume",
-                "Value",
-            ]
+
             for row in range(1, len(data.keys()) + 2):
-                for col in range(1, len(history_headers) + 2):
+                for col in range(1, len(self.history_headers) + 2):
                     char = get_column_letter(col)
                     cell = f"{char}{row}"
                     ws[cell].font = Font(color="FFFFFFFF", size=14)
@@ -198,14 +197,14 @@ class ExcelHandler(object):
                     )
 
             # Make headings bold
-            for col in range(1, len(history_headers) + 2):
+            for col in range(1, len(self.history_headers) + 2):
                 char = get_column_letter(col)
                 cell = f"{char}1"
                 ws[cell].font = Font(color="FFFFFFFF", size=14, bold=True)
 
             # Align cells properly
             for row in range(2, len(data.keys()) + 2):
-                for col in range(2, len(history_headers) + 2):
+                for col in range(2, len(self.history_headers) + 2):
                     char = get_column_letter(col)
                     cell = f"{char}{row}"
                     ws[cell].alignment = Alignment(
@@ -225,17 +224,6 @@ class ExcelHandler(object):
                 else:
                     color = "FFFFFFFF"
                 ws[cell].font = Font(color=color, size=14)
-
-    # TODO: Fill func
-    def convert_to_value(self):
-        pass
-
-    # TODO: Fill func
-    def macd_indicator(self):
-        """
-        MACD = (12-day-avg) - (16-day-avg)
-        """
-        pass
 
     def save_changes(self, path):
         self.wb.save(path)
